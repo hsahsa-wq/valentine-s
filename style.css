@@ -1,0 +1,278 @@
+:root {
+    --bg-color: #ffe6e6; /* Soft pink background */
+    --envelope-color: #ff3366;
+    --envelope-flap: #ff5c85;
+    --envelope-shadow: rgba(0,0,0,0.2);
+    --heart-color: #e6004c;
+    --letter-bg: #fffbf0;
+    --text-color: #55001b;
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: radial-gradient(circle, #ffe6e6 0%, #ffccd5 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Arial', sans-serif;
+}
+
+/* --- Falling Hearts Background --- */
+#hearts-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.falling-heart {
+    position: absolute;
+    top: -50px;
+    color: var(--heart-color);
+    font-size: 24px;
+    opacity: 0.8;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+
+/* --- Envelope Wrapper --- */
+.envelope-wrapper {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.envelope-wrapper:hover {
+    transform: scale(1.05);
+}
+
+.envelope-wrapper:hover .click-instruction {
+    opacity: 1;
+}
+
+.click-instruction {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    text-align: center;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+/* --- The Envelope --- */
+.envelope {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    background-color: var(--envelope-color);
+    box-shadow: 0 10px 20px var(--envelope-shadow);
+    border-radius: 0 0 10px 10px;
+}
+
+/* The flap (triangle top) */
+.envelope .flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 150px solid transparent;
+    border-right: 150px solid transparent;
+    border-top: 110px solid var(--envelope-flap); /* Slightly lighter color for depth */
+    transform-origin: top;
+    transition: transform 0.6s 0.4s ease-in-out, z-index 0.2s 0.4s; /* Delay z-index swap */
+    z-index: 3;
+    border-radius: 10px 10px 0 0;
+}
+
+/* The pocket (triangle bottom) */
+.envelope .pocket {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 150px solid var(--envelope-color);
+    border-right: 150px solid var(--envelope-color);
+    border-top: 100px solid transparent;
+    border-bottom: 200px solid transparent; /* Visual trick for pocket shape */
+    /* Wait, the standard "pocket" look usually is just borders or a clipped div. 
+       Let's simplify: solid block for back, this is the front cover. */
+    border: none; 
+    
+    /* Re-doing pocket to look right: two triangles on sides + bottom trapezoid? 
+       Easier: CSS border trick. */
+    border-left: 150px solid var(--envelope-flap);
+    border-right: 150px solid var(--envelope-flap);
+    border-bottom: 110px solid var(--envelope-color);
+    border-top: 90px solid transparent;
+    
+    /* Resetting to correct border logic for a single element pocket overlay */
+    border-radius: 0 0 10px 10px;
+    z-index: 2;
+}
+
+/* Correction for Pocket/Front appearance */
+.front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2; /* In front of letter initially */
+    pointer-events: none; /* Let clicks pass to envelope container */
+}
+
+.front .pocket {
+    /* Create the 'V' shape of the envelope front */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 150px solid transparent;
+    border-right: 150px solid transparent;
+    border-bottom: 120px solid #ff4d73; /* Slightly distinct shade */
+    z-index: 3;
+    border-radius: 0 0 10px 10px;
+    /* Actually, we need side flaps too. */
+}
+/* Re-thinking the pure CSS envelope for specific visual style. 
+   Let's use ::before/::after on .front to make side flaps vs bottom flap. 
+*/
+.envelope .front::before {
+    /* Left flap */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-top: 100px solid transparent; /* slight angle */
+    border-bottom: 100px solid transparent;
+    border-left: 180px solid #ff426e; 
+    z-index: 2;
+    border-radius: 5px;
+}
+
+.envelope .front::after {
+    /* Right flap */
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-top: 100px solid transparent; 
+    border-bottom: 100px solid transparent;
+    border-right: 180px solid #ff426e;
+    z-index: 2;
+    border-radius: 5px;
+}
+/* Bottom flap (the pocket) */
+.envelope .front .pocket {
+    /* Overriding previous pocket styles */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 150px solid transparent;
+    border-right: 150px solid transparent;
+    border-bottom: 130px solid #ff3366; /* Main color */
+    border-top: none;
+    z-index: 3; 
+}
+
+
+/* --- The Letter --- */
+.letter {
+    position: absolute;
+    top: 10px; /* Hidden inside */
+    left: 15px;
+    width: 270px;
+    height: 180px;
+    background-color: var(--letter-bg);
+    border-radius: 5px;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: transform 0.6s ease-in-out, opacity 0.5s;
+    z-index: 1; /* Behind front flaps */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.letter .text {
+    font-family: 'Dancing Script', cursive;
+    color: var(--text-color);
+}
+
+.letter h1 {
+    font-size: 1.5rem;
+    margin: 0 0 10px 0;
+}
+
+.letter p {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* --- Heart Seal --- */
+.heart-seal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 50px;
+    color: #e60000;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.envelope:hover .heart-seal {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* --- OPEN STATE ANIMATIONS --- */
+
+/* 1. Flap opens */
+.envelope.open .flap {
+    transform: rotateX(180deg);
+    z-index: 1; /* Moves behind the letter after opening */
+    transition-delay: 0s;
+}
+
+/* 2. Letter slides up */
+.envelope.open .letter {
+    transform: translateY(-100px); /* Moves up out of envelope */
+    z-index: 4; /* Comes in front of everything */
+    height: 300px; /* Expands to show more text if needed? Or just slides up? Let's keep size but slide up high. */
+    transition: transform 0.6s 0.6s ease-in-out, height 0.6s 0.6s, z-index 0s 0.6s;
+}
+
+.envelope.open .heart-seal {
+    opacity: 0;
+    pointer-events: none;
+}
